@@ -19,6 +19,13 @@
 
 </div>
 
+> **About this fork.** This is a fork of [MillerRabin/libfprint](https://github.com/MillerRabin/libfprint),
+> which is [libfprint](https://gitlab.freedesktop.org/libfprint/libfprint) plus a driver for the
+> FocalTech FT9366 fingerprint sensor (`2808:a658`). The driver was written by **V8V88V8V88** and
+> **Tattwamashi Nayak**; see [.github/README.md](./.github/README.md) for the driver's status,
+> install steps and full credits. This fork is maintained by [Anish-0211](https://github.com/Anish-0211)
+> and is not affiliated with the upstream libfprint project.
+
 ## History
 
 **LibFPrint** was originally developed as part of an
@@ -35,6 +42,25 @@ fingerprint scanners widely and easily usable under
 common Linux environments.
 
 ## License
+
+This project is licensed under the **GNU Lesser General Public License,
+version 2.1 or (at your option) any later version** (`LGPL-2.1-or-later`).
+The full text is in [COPYING](./COPYING).
+
+In short, you are free to use, study, modify and redistribute this library,
+including in proprietary software, provided that you:
+
+ - keep the copyright notices and the license text with the code;
+ - release any modifications you make to the library itself under the LGPL;
+ - allow users of your software to replace the library with a modified
+   version (for example by linking it dynamically);
+ - clearly mark your changes.
+
+The library comes with **no warranty**. See [COPYING](./COPYING) for details.
+
+Copyright remains with the original authors listed in [AUTHORS](./AUTHORS) and
+in the headers of each source file, including the authors of the FT9366 driver
+(`libfprint/drivers/ft9366*`). Forking does not change the copyright holders.
 
 `Section 6` of the license states that for compiled works that use
 this library, such works must include **LibFPrint** copyright notices
