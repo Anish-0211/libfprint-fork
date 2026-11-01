@@ -19,12 +19,11 @@
 
 </div>
 
-> **About this fork.** This is a fork of [MillerRabin/libfprint](https://github.com/MillerRabin/libfprint),
-> which is [libfprint](https://gitlab.freedesktop.org/libfprint/libfprint) plus a driver for the
-> FocalTech FT9366 fingerprint sensor (`2808:a658`). The driver was written by **V8V88V8V88** and
-> **Tattwamashi Nayak**; see [.github/README.md](./.github/README.md) for the driver's status,
-> install steps and full credits. This fork is maintained by [Anish-0211](https://github.com/Anish-0211)
-> and is not affiliated with the upstream libfprint project.
+> **About this fork.** This is a fork of [libfprint](https://gitlab.freedesktop.org/libfprint/libfprint)
+> with a driver for the FocalTech FT9366 fingerprint sensor (`2808:a658`). The driver was written by
+> **V8V88V8V88** and **Tattwamashi Nayak**; see [.github/README.md](./.github/README.md) for the
+> driver's status, install steps and full credits. This fork is maintained by
+> [Anish-0211](https://github.com/Anish-0211) and is not affiliated with the upstream libfprint project.
 
 ## History
 
