@@ -72,6 +72,32 @@ We include **Bozorth3** from the **[US Export Controlled]**
 distribution, which we have determined to be fine
 being shipped in an open source project.
 
+## Development
+
+A `Makefile` wraps the project's build, test, formatting and analysis tools:
+
+| Command | What it does | Needs |
+|---|---|---|
+| `make` / `make build` | Configure with Meson and build with Ninja into `build/` | `meson`, `ninja` |
+| `make test` | Run the Meson test suite | `meson` |
+| `make format` | Format all C sources with the project's `uncrustify` config | `uncrustify` |
+| `make format-check` | Check formatting without changing files | `uncrustify` |
+| `make lint` | Run `cppcheck` on the FT9366 driver files | `cppcheck` |
+| `make scan` | Run clang's static analyzer (`scan-build`) in `build-scan/` | `clang-tools` |
+| `make asan` | Build and test with AddressSanitizer and UBSan in `build-asan/` | `meson`, `gcc` or `clang` |
+| `make valgrind` | Run the tests under `valgrind` with the project's suppressions | `valgrind` |
+| `make check` | `format-check`, `lint` and `test` together | all of the above |
+| `make clean` | Remove the build directories | |
+
+On Ubuntu, install the extra tools with:
+
+```sh
+sudo apt install uncrustify cppcheck valgrind clang-tools
+```
+
+Please run `make format` and `make check` before sending changes. See
+[HACKING.md](./HACKING.md) for the full contribution guide.
+
 ## Get in *touch*
 
  - [IRC] - `#fprint` @ `irc.oftc.net`
