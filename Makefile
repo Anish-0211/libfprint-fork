@@ -10,19 +10,26 @@ setup:
 	meson setup $(BUILD) $(SETUP_OPTS)
 
 build:
-	@test -d $(BUILD) || $(MAKE) setup
+	@if [ -d $(BUILD) ] && ! grep -q '"source": "$(CURDIR)"' $(BUILD)/meson-info/meson-info.json 2>/dev/null; then \
+		meson setup --wipe $(BUILD) $(SETUP_OPTS); \
+	elif [ ! -d $(BUILD) ]; then \
+		$(MAKE) setup; \
+	fi
 	ninja -C $(BUILD)
 
 test: build
 	meson test -C $(BUILD) --print-errorlogs
 
 format:
+	@command -v uncrustify >/dev/null || { echo "uncrustify not found: sudo apt install uncrustify"; exit 1; }
 	./scripts/uncrustify.sh
 
 format-check:
+	@command -v uncrustify >/dev/null || { echo "uncrustify not found: sudo apt install uncrustify"; exit 1; }
 	./scripts/uncrustify.sh --check
 
 lint:
+	@command -v cppcheck >/dev/null || { echo "cppcheck not found: sudo apt install cppcheck"; exit 1; }
 	cppcheck --enable=warning,style,performance --inline-suppr --error-exitcode=1 -I libfprint -I libfprint/drivers $(DRIVER_SRC)
 
 scan:
