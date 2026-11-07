@@ -393,11 +393,12 @@ interp_extremum (const Pyramid *pyr, gint o, gint *i, gint *x, gint *y,
                  gdouble *xi, gdouble *xr, gdouble *xc)
 {
   const gint w = pyr->dog[o][0]->w, h = pyr->dog[o][0]->h;
-  gdouble dx, dy, ds, dxx, dyy, dss, dxy, dxs, dys, v;
+  gdouble dx, dy, ds, v;
   gint n;
 
   for (n = 0; n < SIFT_MAX_INTERP; n++)
     {
+      gdouble dxx, dyy, dss, dxy, dxs, dys;
       gdouble H[3][3], g[3], det, inv[3][3];
 
       v = DOG (o, *i, *x, *y);
@@ -843,16 +844,16 @@ best_pose (const GArray *pairs, Pose *out)
       for (guint k = 0; k < pairs->len; k++)
         {
           const Pair *pr = &g_array_index (pairs, Pair, k);
-          gdouble px, py, tx, ty;
+          gdouble ppx, py, tx, ty;
 
           if (!pair_agrees (pr, &best_pose, best_rot))
             continue;
-          px = pr->p->x - mpx;
+          ppx = pr->p->x - mpx;
           py = pr->p->y - mpy;
           tx = pr->tx - mtx;
           ty = pr->ty - mty;
-          sxx += px * tx + py * ty;
-          sxy += px * ty - py * tx;
+          sxx += ppx * tx + py * ty;
+          sxy += ppx * ty - py * tx;
         }
       best_rot = atan2 (sxy, sxx);
       best_pose.c = cos (best_rot);
