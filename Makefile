@@ -18,7 +18,7 @@ install-tools:
 	done; \
 	if [ -n "$$pkgs" ]; then \
 		echo "Installing:$$pkgs (sudo will ask for your password)"; \
-		sudo apt install -y$$pkgs; \
+		sudo apt update && sudo apt install -y$$pkgs; \
 	else \
 		echo "All tools present."; \
 	fi
