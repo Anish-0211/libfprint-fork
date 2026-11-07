@@ -228,11 +228,11 @@ typedef struct _gxfp_sensor_cfg
 } gxfp_sensor_cfg_t, *pgxfp_sensor_cfg_t;
 /* */
 
-int gx_proto_build_package (uint8_t       *ppackage,
-                            uint32_t      *package_len,
-                            uint16_t       cmd,
-                            const uint8_t *payload,
-                            uint32_t       payload_size);
+int gx_proto_build_package (uint8_t        *ppackage,
+                            const uint32_t *package_len,
+                            uint16_t        cmd,
+                            const uint8_t  *payload,
+                            uint32_t        payload_size);
 
 int gx_proto_parse_header (FpiByteReader *reader,
                            pack_header   *pheader);
@@ -243,9 +243,9 @@ int gx_proto_parse_body (uint16_t             cmd,
 
 int gx_proto_init_sensor_config (pgxfp_sensor_cfg_t pconfig);
 
-uint8_t gx_proto_crc8_calc (uint8_t *lubp_date,
-                            uint32_t lui_len);
+uint8_t gx_proto_crc8_calc (const uint8_t *lubp_date,
+                            uint32_t       lui_len);
 
-uint8_t gx_proto_crc32_calc (uint8_t *pchMsg,
-                             uint32_t wDataLen,
-                             uint8_t *pchMsgDst);
+uint8_t gx_proto_crc32_calc (const uint8_t *pchMsg,
+                             uint32_t       wDataLen,
+                             uint8_t       *pchMsgDst);

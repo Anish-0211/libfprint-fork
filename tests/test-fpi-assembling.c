@@ -41,7 +41,7 @@ cairo_get_pixel (struct fpi_frame_asmbl_ctx *ctx,
                  unsigned int                x,
                  unsigned int                y)
 {
-  cairo_frame *c_frame = (void *) frame; /* Indirect cast to avoid alignment warning. */
+  const cairo_frame *c_frame = (void *) frame; /* Indirect cast to avoid alignment warning. */
 
   x = x + c_frame->x;
   y = y + c_frame->y;
@@ -103,8 +103,9 @@ test_frame_assembling (void)
     }
   //offset = -offset;
 
+  g_assert_nonnull (frames);
   fpi_do_movement_estimation (&ctx, frames);
-  for (GSList *l = frames->next; l != NULL; l = l->next)
+  for (const GSList *l = frames->next; l != NULL; l = l->next)
     {
       cairo_frame * frame = l->data;
 

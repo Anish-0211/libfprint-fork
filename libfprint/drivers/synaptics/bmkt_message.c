@@ -39,7 +39,7 @@ extract8 (const uint8_t *buf, int *offset)
 
 
 static int
-parse_error_response (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_error_response (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   if (msg_resp->payload_len != 2)
     return BMKT_UNRECOGNIZED_MESSAGE;
@@ -50,7 +50,7 @@ parse_error_response (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 }
 
 static int
-parse_init_ok (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_init_ok (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   bmkt_init_resp_t *init_resp = &resp->response.init_resp;
 
@@ -64,7 +64,7 @@ parse_init_ok (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 
 
 static int
-parse_fps_mode_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_fps_mode_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   int offset = 0;
   bmkt_fps_mode_resp_t *fps_mode_resp = &resp->response.fps_mode_resp;
@@ -81,7 +81,7 @@ parse_fps_mode_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 }
 
 static int
-parse_enroll_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_enroll_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   bmkt_enroll_resp_t *enroll_resp = &resp->response.enroll_resp;
 
@@ -123,7 +123,7 @@ parse_auth_ok (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 }
 
 static int
-parse_security_level_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_security_level_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   bmkt_set_sec_level_resp_t *sec_level_resp = &resp->response.sec_level_resp;
 
@@ -136,7 +136,7 @@ parse_security_level_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 }
 
 static int
-parse_del_all_users_progress_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_del_all_users_progress_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   bmkt_del_all_users_resp_t *del_all_users_resp = &resp->response.del_all_users_resp;
 
@@ -149,7 +149,7 @@ parse_del_all_users_progress_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t 
 }
 
 static int
-parse_db_cap_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_db_cap_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   bmkt_get_db_capacity_resp_t *db_cap_resp = &resp->response.db_cap_resp;
   int offset = 0;
@@ -170,7 +170,7 @@ parse_db_cap_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 }
 
 static int
-parse_get_enrolled_fingers_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_get_enrolled_fingers_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   int offset = 0;
   int i = 0;
@@ -199,10 +199,10 @@ parse_get_enrolled_fingers_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *r
   return BMKT_SUCCESS;
 }
 static int
-parse_get_enrolled_users_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_get_enrolled_users_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   int offset = 0;
-  int i = 0;
+  int i;
 
   /* the payload is 2 bytes + template data */
   if (msg_resp->payload_len < 2)
@@ -241,7 +241,7 @@ parse_get_enrolled_users_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *res
 }
 
 static int
-parse_get_version_report (bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
+parse_get_version_report (const bmkt_msg_resp_t *msg_resp, bmkt_response_t *resp)
 {
   bmkt_get_version_resp_t *get_version_resp = &resp->response.get_version_resp;
   int offset = 0;

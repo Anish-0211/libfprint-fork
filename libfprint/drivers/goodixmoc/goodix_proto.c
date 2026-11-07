@@ -33,7 +33,7 @@
 
 
 uint8_t
-gx_proto_crc8_calc (uint8_t *lubp_date, uint32_t lui_len)
+gx_proto_crc8_calc (const uint8_t *lubp_date, uint32_t lui_len)
 {
   const uint8_t *data = lubp_date;
   unsigned int crc = 0;
@@ -127,7 +127,6 @@ crc32_init (gf_crc32_context *ctx)
 static void
 crc32_update (gf_crc32_context *ctx, const uint8_t *message, uint32_t n_bytes)
 {
-  uint8_t data;
   uint32_t byte;
 
   /*
@@ -135,7 +134,7 @@ crc32_update (gf_crc32_context *ctx, const uint8_t *message, uint32_t n_bytes)
    */
   for (byte = 0; byte < n_bytes; ++byte)
     {
-      data = REFLECT_DATA (message[byte]) ^ (ctx->crc >> (WIDTH - 8));
+      uint8_t data = REFLECT_DATA (message[byte]) ^ (ctx->crc >> (WIDTH - 8));
       ctx->crc = s_crc_table[data] ^ (ctx->crc << 8);
     }
 }
@@ -151,7 +150,7 @@ crc32_final (gf_crc32_context *ctx, uint8_t *md)
 }
 
 uint8_t
-gx_proto_crc32_calc (uint8_t *pchMsg, uint32_t wDataLen, uint8_t *pchMsgDst)
+gx_proto_crc32_calc (const uint8_t *pchMsg, uint32_t wDataLen, uint8_t *pchMsgDst)
 {
   gf_crc32_context context = { 0 };
 
@@ -196,11 +195,11 @@ init_pack_header (
 
 
 int
-gx_proto_build_package (uint8_t       *ppackage,
-                        uint32_t      *package_len,
-                        uint16_t       cmd,
-                        const uint8_t *payload,
-                        uint32_t       payload_size)
+gx_proto_build_package (uint8_t        *ppackage,
+                        const uint32_t *package_len,
+                        uint16_t        cmd,
+                        const uint8_t  *payload,
+                        uint32_t        payload_size)
 {
   pack_header header;
 
@@ -474,7 +473,7 @@ gx_proto_parse_body (uint16_t cmd, FpiByteReader *byte_reader, pgxfp_cmd_respons
                 presp->result = GX_FAILED;
                 break;
               }
-            g_debug ("match, score: %d, study: %d", score, study);
+            g_debug ("match, score: %u, study: %d", score, study);
           }
       }
       break;

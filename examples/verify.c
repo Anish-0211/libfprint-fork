@@ -115,8 +115,6 @@ static void
 on_match_cb (FpDevice *dev, FpPrint *match, FpPrint *print,
              gpointer user_data, GError *error)
 {
-  VerifyData *verify_data = user_data;
-
   if (error)
     {
       g_warning ("Match report: Finger not matched, retry error reported: %s",
@@ -130,6 +128,7 @@ on_match_cb (FpDevice *dev, FpPrint *match, FpPrint *print,
 
   if (match)
     {
+      VerifyData *verify_data = user_data;
       const GDate *date = fp_print_get_enroll_date (match);
       char date_str[128] = "<unknown>";
 

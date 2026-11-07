@@ -327,13 +327,12 @@ activate_quit (GSimpleAction *action,
                gpointer       user_data)
 {
   GtkApplication *app = user_data;
-  GtkWidget *win;
   GList *list, *next;
 
   list = gtk_application_get_windows (app);
   while (list)
     {
-      win = list->data;
+      GtkWidget *win = list->data;
       next = list->next;
 
       gtk_widget_destroy (GTK_WIDGET (win));

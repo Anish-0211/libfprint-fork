@@ -157,7 +157,7 @@ on_list_completed (FpDevice     *dev,
           FpPrint * print = prints->pdata[i];
           const GDate *date = fp_print_get_enroll_date (print);
 
-          g_print ("[%d] Print of %s finger for username %s", i + 1,
+          g_print ("[%u] Print of %s finger for username %s", i + 1,
                    finger_to_string (fp_print_get_finger (print)),
                    fp_print_get_username (print));
 

@@ -59,7 +59,7 @@ static const uint16_t crc_table[256] = {
 };
 
 uint16_t
-udf_crc (unsigned char *buffer, size_t size)
+udf_crc (const unsigned char *buffer, size_t size)
 {
   uint16_t crc = 0;
 

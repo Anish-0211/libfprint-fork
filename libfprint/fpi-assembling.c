@@ -47,7 +47,7 @@ calc_error (struct fpi_frame_asmbl_ctx *ctx,
             int                         dy)
 {
   unsigned int width, height;
-  unsigned int x1, y1, x2, y2, err, i, j;
+  unsigned int y1, y2, err, i;
 
   width = ctx->frame_width - (dx > 0 ? dx : -dx);
   height = ctx->frame_height - dy;
@@ -61,9 +61,9 @@ calc_error (struct fpi_frame_asmbl_ctx *ctx,
   err = 0;
   do
     {
-      x1 = dx < 0 ? 0 : dx;
-      x2 = dx < 0 ? -dx : 0;
-      j = 0;
+      unsigned int x1 = dx < 0 ? 0 : dx;
+      unsigned int x2 = dx < 0 ? -dx : 0;
+      unsigned int j = 0;
 
       do
         {
@@ -104,7 +104,6 @@ find_overlap (struct fpi_frame_asmbl_ctx *ctx,
               unsigned int               *min_error)
 {
   int dx, dy;
-  unsigned int err;
 
   *min_error = 255 * ctx->frame_height * ctx->frame_width;
 
@@ -117,8 +116,9 @@ find_overlap (struct fpi_frame_asmbl_ctx *ctx,
     {
       for (dx = -8; dx < 8; dx++)
         {
-          err = calc_error (ctx, first_frame, second_frame,
-                            dx, dy);
+          unsigned int err = calc_error (ctx, first_frame, second_frame,
+                                         dx, dy);
+
           if (err < *min_error)
             {
               *min_error = err;
@@ -358,7 +358,6 @@ interpolate_lines (struct fpi_line_asmbl_ctx *ctx,
                    int size)
 {
   int i;
-  unsigned char p1, p2;
 
   if (!line1 || !line2)
     return;
@@ -366,8 +365,8 @@ interpolate_lines (struct fpi_line_asmbl_ctx *ctx,
   for (i = 0; i < size; i++)
     {
       gint unscaled;
-      p1 = ctx->get_pixel (ctx, line1, i);
-      p2 = ctx->get_pixel (ctx, line2, i);
+      unsigned char p1 = ctx->get_pixel (ctx, line1, i);
+      unsigned char p2 = ctx->get_pixel (ctx, line2, i);
 
       unscaled = (yi_f - y1_f) * p2 + (y2_f - yi_f) * p1;
       output[i] = (unscaled) / (y2_f - y1_f);

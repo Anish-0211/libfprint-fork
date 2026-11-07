@@ -127,8 +127,6 @@ static void
 on_identify_cb (FpDevice *dev, FpPrint *match, FpPrint *print,
                 gpointer user_data, GError *error)
 {
-  IdentifyData *identify_data = user_data;
-
   if (error)
     {
       g_warning ("Identify report: No finger matched, retry error reported: %s",
@@ -142,6 +140,7 @@ on_identify_cb (FpDevice *dev, FpPrint *match, FpPrint *print,
 
   if (match)
     {
+      IdentifyData *identify_data = user_data;
       g_autoptr(FpPrint) matched_print = g_object_ref (match);
       const GDate *date;
       char date_str[128] = {};
