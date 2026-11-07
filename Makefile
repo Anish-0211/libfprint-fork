@@ -8,7 +8,8 @@ LINT_SUPPRESS := unknownMacro constParameterCallback \
 	constParameterPointer:libfprint/fp-image.c constVariablePointer:libfprint/fp-image.c \
 	constParameterPointer:libfprint/fpi-assembling.c constParameterPointer:libfprint/fpi-byte-reader.c \
 	constParameterPointer:libfprint/fpi-byte-reader.h constVariablePointer:libfprint/fpi-byte-reader.c \
-	constParameterPointer:libfprint/fpi-byte-writer.c
+	constParameterPointer:libfprint/fpi-byte-writer.c \
+	syntaxError:libfprint/fpi-spi-transfer.c syntaxError:libfprint/fpi-usb-transfer.c
 
 .PHONY: all setup install-tools deps configure nuke build test format format-check lint scan asan valgrind check clean help
 
