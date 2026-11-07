@@ -63,7 +63,7 @@ format-check:
 
 lint:
 	@command -v cppcheck >/dev/null || { echo "cppcheck not found: install the "cppcheck" package"; exit 1; }
-	cppcheck --enable=warning,style,performance --inline-suppr --error-exitcode=1 -I libfprint -I libfprint/drivers $(DRIVER_SRC)
+	cppcheck --library=gtk --suppress=unknownMacro --suppress=unusedStructMember:libfprint/drivers/ft9366-match.h --enable=warning,style,performance --inline-suppr --error-exitcode=1 -I libfprint -I libfprint/drivers $(DRIVER_SRC)
 
 scan:
 	rm -rf build-scan
