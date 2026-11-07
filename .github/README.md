@@ -1,5 +1,7 @@
 # libfprint + FocalTech FT9366 driver
 
+[![CI](https://github.com/Anish-0211/libfprint-fork/actions/workflows/ci.yml/badge.svg)](https://github.com/Anish-0211/libfprint-fork/actions/workflows/ci.yml)
+
 An open-source [libfprint](https://gitlab.freedesktop.org/libfprint/libfprint) driver for the
 **FocalTech FT9366 fingerprint sensor behind a Realtek RTS5811 USB bridge (`2808:a658`)**, found
 in ASUS VivoBook laptops and others:
@@ -83,6 +85,65 @@ ninja -C build
 - The sensor is tiny: enroll with the finger placed the way you will actually touch it, shifting
   a millimetre or two between touches.
 - If a scan fails, lift the finger completely before trying again.
+
+## Notes from this fork
+
+This fork ([Anish-0211](https://github.com/Anish-0211)) builds on the driver above and adds
+tuning, speed and tooling changes. The driver itself is the original authors' work (see
+Credits). The results below are from **one unit** and are separate from the test numbers in
+Status.
+
+**Tested on:** ASUS VivoBook K3502ZA, Ubuntu 26.10 (kernel 7.3), fprintd 1.94.5 with this
+fork's libfprint installed under `/usr/local`.
+
+**What did not work out of the box.** On this unit every touch was rejected as "finger not
+centered". The raw frames showed why: 96.9 % of pixels sat at 4092, the top of the 12-bit range, both
+with and without a finger, so the image carried no signal. The reported 25 % "coverage" was
+only noise in the two edge columns. The imaging DAC default (`0x3b`) was just outside this
+unit's usable window.
+
+**What changed:**
+
+- **Imaging DAC default `0x3b` to `0x36`.** A sweep of the DAC found the usable window at
+  `0x34` to `0x38`; `0x36` is its middle. From `0x20` to `0x31` the frames were all zero, from
+  `0x3b` up all saturated, and `0x00` and `0x10` made the sensor time out.
+
+  | `FT9366_IMG_DAC` | Mid-scale pixels |
+  |---|---|
+  | `0x31` | 0 % |
+  | `0x33` | 28 % |
+  | `0x34` | 96 % |
+  | `0x35` to `0x38` | 99 to 100 % |
+  | `0x39` | 62 % |
+  | `0x3a` | 2 % |
+  | `0x3b` | 0 % (saturated) |
+
+- **Verify and identify no longer wait for the finger to lift.** Enroll still does. The
+  match arrives about 0.5 s after the finger lands instead of about 0.9 s.
+- **Overrides for tuning your own unit:** `FT9366_IMG_DAC` and `FT9366_INTEGRATION` change the
+  imaging DAC and the bridge integration byte at runtime (for example `FT9366_IMG_DAC=0x35`),
+  and `FT9366_DUMP=<dir>` writes every capture, raw frame and background as image files.
+  Frame dumps are biometric data: keep them out of version control.
+- **Tooling:** `make setup`, `make check` (format check, strict `cppcheck` lint, build and
+  tests) and CI. See the Development section of the root
+  [README.md](../README.md).
+
+**Measured on this unit** (single runs, not a benchmark):
+
+| | Before | After |
+|---|---|---|
+| Touch coverage reported by the driver | 25 % | 97 % |
+| Enroll | 0 of 20 stages | 20 of 20 |
+| Finger down to match | about 930 ms | about 476 ms |
+
+Enroll, verify and `sudo` through `pam_fprintd` work, and fingers other than the enrolled one
+were rejected. **Not yet verified:** GNOME lock screen unlock, behaviour across suspend, and any
+other `2808:a658` unit.
+
+**Tuning another unit:** if touches are rejected with coverage stuck near 25 %, run with
+`FT9366_DUMP` set and check whether the frames are saturated. If they are, try other
+`FT9366_IMG_DAC` values around `0x30` to `0x40` and look for frames that use the middle of the
+range.
 
 ## Credits
 
