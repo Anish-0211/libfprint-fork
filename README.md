@@ -77,6 +77,8 @@ A `Makefile` wraps the project's build, test, formatting and analysis tools:
 
 | Command | What it does | Needs |
 |---|---|---|
+| `make setup` | Install any missing tools (`sudo apt`), then wipe, reconfigure and build everything from scratch | `sudo`, `apt` |
+| `make deps` | List missing tools and print the install command, without installing | |
 | `make` / `make build` | Configure with Meson and build with Ninja into `build/` | `meson`, `ninja` |
 | `make test` | Run the Meson test suite | `meson` |
 | `make format` | Format all C sources with the project's `uncrustify` config | `uncrustify` |
@@ -87,11 +89,13 @@ A `Makefile` wraps the project's build, test, formatting and analysis tools:
 | `make valgrind` | Run the tests under `valgrind` with the project's suppressions | `valgrind` |
 | `make check` | `format-check`, `lint` and `test` together | all of the above |
 | `make clean` | Remove the build directories | |
+| `make nuke` | Remove `build/`, `build-fresh/`, `build-scan/` and `build-asan/`; run `make setup` to rebuild | |
 
-On Ubuntu, install the extra tools with:
+On Ubuntu, `make setup` installs the extra tools for you and asks for your `sudo`
+password only when something is missing. To install them by hand instead:
 
 ```sh
-sudo apt install uncrustify cppcheck valgrind clang-tools
+sudo apt install uncrustify cppcheck valgrind clang-tools umockdev
 ```
 
 Please run `make format` and `make check` before sending changes. See

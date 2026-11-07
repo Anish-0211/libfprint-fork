@@ -2,18 +2,51 @@ BUILD ?= build
 SETUP_OPTS ?= -Ddoc=false -Dgtk-examples=false -Dintrospection=false
 DRIVER_SRC := libfprint/drivers/ft9366.c libfprint/drivers/ft9366-match.c libfprint/drivers/ft9366-match.h
 
-.PHONY: all setup build test format format-check lint scan asan valgrind check clean help
+.PHONY: all setup install-tools deps configure nuke build test format format-check lint scan asan valgrind check clean help
 
 all: build
 
-setup:
-	meson setup $(BUILD) $(SETUP_OPTS)
+setup: install-tools
+	$(MAKE) configure
+	ninja -C $(BUILD)
+
+install-tools:
+	@pkgs=""; \
+	for t in uncrustify:uncrustify cppcheck:cppcheck valgrind:valgrind scan-build:clang-tools umockdev-run:umockdev; do \
+		cmd=$${t%%:*}; pkg=$${t##*:}; \
+		command -v $$cmd >/dev/null || pkgs="$$pkgs $$pkg"; \
+	done; \
+	if [ -n "$$pkgs" ]; then \
+		echo "Installing:$$pkgs (sudo will ask for your password)"; \
+		sudo apt install -y$$pkgs; \
+	else \
+		echo "All tools present."; \
+	fi
+
+deps:
+	@missing=""; pkgs=""; \
+	for t in uncrustify:uncrustify cppcheck:cppcheck valgrind:valgrind scan-build:clang-tools umockdev-run:umockdev; do \
+		cmd=$${t%%:*}; pkg=$${t##*:}; \
+		command -v $$cmd >/dev/null || { missing="$$missing $$cmd"; pkgs="$$pkgs $$pkg"; }; \
+	done; \
+	if [ -n "$$missing" ]; then \
+		echo "Missing tools:$$missing"; \
+		echo "Install them yourself with: sudo apt install$$pkgs"; \
+	else \
+		echo "All tools present."; \
+	fi
+
+configure:
+	@if [ -d $(BUILD) ]; then meson setup --wipe $(BUILD) $(SETUP_OPTS); else meson setup $(BUILD) $(SETUP_OPTS); fi
+
+nuke:
+	rm -rf build build-fresh build-scan build-asan
 
 build:
 	@if [ -d $(BUILD) ] && ! grep -q '"source": "$(CURDIR)"' $(BUILD)/meson-info/meson-info.json 2>/dev/null; then \
-		meson setup --wipe $(BUILD) $(SETUP_OPTS); \
+		$(MAKE) configure; \
 	elif [ ! -d $(BUILD) ]; then \
-		$(MAKE) setup; \
+		$(MAKE) configure; \
 	fi
 	ninja -C $(BUILD)
 
@@ -21,15 +54,15 @@ test: build
 	meson test -C $(BUILD) --print-errorlogs
 
 format:
-	@command -v uncrustify >/dev/null || { echo "uncrustify not found: sudo apt install uncrustify"; exit 1; }
+	@command -v uncrustify >/dev/null || { echo "uncrustify not found: install the "uncrustify" package"; exit 1; }
 	./scripts/uncrustify.sh
 
 format-check:
-	@command -v uncrustify >/dev/null || { echo "uncrustify not found: sudo apt install uncrustify"; exit 1; }
+	@command -v uncrustify >/dev/null || { echo "uncrustify not found: install the "uncrustify" package"; exit 1; }
 	./scripts/uncrustify.sh --check
 
 lint:
-	@command -v cppcheck >/dev/null || { echo "cppcheck not found: sudo apt install cppcheck"; exit 1; }
+	@command -v cppcheck >/dev/null || { echo "cppcheck not found: install the "cppcheck" package"; exit 1; }
 	cppcheck --enable=warning,style,performance --inline-suppr --error-exitcode=1 -I libfprint -I libfprint/drivers $(DRIVER_SRC)
 
 scan:
@@ -51,4 +84,4 @@ clean:
 	rm -rf $(BUILD) build-scan build-asan
 
 help:
-	@echo "build  test  format  format-check  lint  scan  asan  valgrind  check  clean"
+	@echo "setup  deps  nuke  build  test  format  format-check  lint  scan  asan  valgrind  check  clean"
