@@ -84,6 +84,7 @@ A `Makefile` wraps the project's build, test, formatting and analysis tools:
 | `make format` | Format all C sources with the project's `uncrustify` config | `uncrustify` |
 | `make format-check` | Check formatting without changing files | `uncrustify` |
 | `make lint` | Run `cppcheck` on the FT9366 driver files | `cppcheck` |
+| `make lint-all` | Report `cppcheck` findings for the whole repo, including upstream and vendored code; informational, never fails | `cppcheck` |
 | `make scan` | Run clang's static analyzer (`scan-build`) in `build-scan/` | `clang-tools` |
 | `make asan` | Build and test with AddressSanitizer and UBSan in `build-asan/` | `meson`, `gcc` or `clang` |
 | `make valgrind` | Run the tests under `valgrind` with the project's suppressions | `valgrind` |
