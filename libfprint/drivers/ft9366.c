@@ -47,51 +47,51 @@
  */
 
 #define FT9366_EP_OUT (0x01 | FPI_USB_ENDPOINT_OUT)
-#define FT9366_EP_IN  (0x02 | FPI_USB_ENDPOINT_IN)
+#define FT9366_EP_IN (0x02 | FPI_USB_ENDPOINT_IN)
 
 
-#define FT9366_REG_FRAME      0x9a05  /* image burst read source */
-#define FT9366_REG_IRQ_FLAGS  0x9a82  /* why the IRQ fired */
-#define FT9366_REG_IRQ_ACK    0x9a84  /* write the flags back to clear */
-#define FT9366_REG_IRQ_PIN    0x9a8b  /* reads FT9366_IRQ_PENDING when IRQ is up */
-#define FT9366_REG_FDT_BASE   0x80b0  /* 4 x u16 finger-detect baseline */
-#define FT9366_REG_FDT_VALUE  0x80b8  /* 4 x u16 finger-detect measurement */
-#define FT9366_REG_DAC        0x9801  /* 0xfc80 | dac */
-#define FT9366_REG_FDT_MODE   0x9881
+#define FT9366_REG_FRAME 0x9a05       /* image burst read source */
+#define FT9366_REG_IRQ_FLAGS 0x9a82   /* why the IRQ fired */
+#define FT9366_REG_IRQ_ACK 0x9a84     /* write the flags back to clear */
+#define FT9366_REG_IRQ_PIN 0x9a8b     /* reads FT9366_IRQ_PENDING when IRQ is up */
+#define FT9366_REG_FDT_BASE 0x80b0    /* 4 x u16 finger-detect baseline */
+#define FT9366_REG_FDT_VALUE 0x80b8   /* 4 x u16 finger-detect measurement */
+#define FT9366_REG_DAC 0x9801         /* 0xfc80 | dac */
+#define FT9366_REG_FDT_MODE 0x9881
 
-#define FT9366_IRQ_PENDING    0x9362
-#define FT9366_IRQ_DOWN       0x0002
-#define FT9366_IRQ_FDT_DONE   0x0008
-#define FT9366_IRQ_BASE_BAD   0x0010  /* finger-detect baseline is off (taken with a finger on) */
-#define FT9366_IRQ_FRAME      0x0020
+#define FT9366_IRQ_PENDING 0x9362
+#define FT9366_IRQ_DOWN 0x0002
+#define FT9366_IRQ_FDT_DONE 0x0008
+#define FT9366_IRQ_BASE_BAD 0x0010    /* finger-detect baseline is off (taken with a finger on) */
+#define FT9366_IRQ_FRAME 0x0020
 
-#define FT9366_FDT_MODE_DOWN  0x0f8d
-#define FT9366_FDT_MODE_UP    0x0f0c
+#define FT9366_FDT_MODE_DOWN 0x0f8d
+#define FT9366_FDT_MODE_UP 0x0f0c
 #define FT9366_FDT_MODE_MANUAL 0x0f0e
 
 /* values the vendor driver settled on for this sensor */
-#define FT9366_FDT_DAC        0x1a
-#define FT9366_IMG_DAC        0x3b
-#define FT9366_FDT_BASE_DROP  31   /* baseline = empty-sensor measurement - this */
-#define FT9366_MAX_REINITS    3    /* sensor recalibrations per touch for a bad baseline */
-#define FT9366_FDT_STABLE     8    /* measurement noise: readings this close are "unchanged" */
+#define FT9366_FDT_DAC 0x1a
+#define FT9366_IMG_DAC 0x3b
+#define FT9366_FDT_BASE_DROP 31    /* baseline = empty-sensor measurement - this */
+#define FT9366_MAX_REINITS 3       /* sensor recalibrations per touch for a bad baseline */
+#define FT9366_FDT_STABLE 8        /* measurement noise: readings this close are "unchanged" */
 #define FT9366_FDT_TOUCH_DROP 50   /* a zone this far below baseline is touched */
 
-#define FT9366_TIMEOUT        1000
-#define FT9366_POLL_MS        20
-#define FT9366_HEAL_POLLS     10   /* measure while idle every ~0.3 s: also the software finger-down fallback */
+#define FT9366_TIMEOUT 1000
+#define FT9366_POLL_MS 20
+#define FT9366_HEAL_POLLS 10       /* measure while idle every ~0.3 s: also the software finger-down fallback */
 
 /* matcher */
-#define FT9366_SETTLE_MS       40   /* finger-down IRQ fires on first contact: let it land */
-#define FT9366_MAX_FRAMES      4    /* frames per touch; the best-covered one is kept */
-#define FT9366_GOOD_COVERAGE   0.9  /* stop taking frames once one covers this much */
-#define FT9366_FRAME_GAP_MS    25
-#define FT9366_ENROLL_STAGES   20   /* each touch sees ~3x4 mm: more touches, more finger */
-#define FT9366_DUP_OVERLAP     0.95 /* an enroll touch this covered by earlier ones... */
-#define FT9366_DUP_NCC         0.9  /* ...and this well aligned adds nothing new */
-#define FT9366_MAX_DUPS        1    /* then take it anyway rather than loop */
-#define FT9366_MIN_COVERAGE    0.4  /* share of the sensor a usable touch covers */
-#define FT9366_PRINT_VERSION   2
+#define FT9366_SETTLE_MS 40         /* finger-down IRQ fires on first contact: let it land */
+#define FT9366_MAX_FRAMES 4         /* frames per touch; the best-covered one is kept */
+#define FT9366_GOOD_COVERAGE 0.9    /* stop taking frames once one covers this much */
+#define FT9366_FRAME_GAP_MS 25
+#define FT9366_ENROLL_STAGES 20     /* each touch sees ~3x4 mm: more touches, more finger */
+#define FT9366_DUP_OVERLAP 0.95     /* an enroll touch this covered by earlier ones... */
+#define FT9366_DUP_NCC 0.9          /* ...and this well aligned adds nothing new */
+#define FT9366_MAX_DUPS 1           /* then take it anyway rather than loop */
+#define FT9366_MIN_COVERAGE 0.4     /* share of the sensor a usable touch covers */
+#define FT9366_PRINT_VERSION 2
 
 /* ---- op tables ---------------------------------------------------------- */
 
@@ -270,15 +270,15 @@ typedef enum {
 
 struct _FpiDeviceFt9366
 {
-  FpDevice        parent;
+  FpDevice     parent;
 
-  FpiSsm         *ssm;
-  Ft9366Action    action;
-  gboolean        wait_up;
-  guint           polls;           /* polls since the last baseline check */
-  gboolean        have_base;       /* fdt_base / background are valid */
-  gboolean        finger_at_init;  /* the last init measured a touched sensor */
-  gboolean        sw_down;         /* finger-down came from a measurement, not the chip IRQ */
+  FpiSsm      *ssm;
+  Ft9366Action action;
+  gboolean     wait_up;
+  guint        polls;              /* polls since the last baseline check */
+  gboolean     have_base;          /* fdt_base / background are valid */
+  gboolean     finger_at_init;     /* the last init measured a touched sensor */
+  gboolean     sw_down;            /* finger-down came from a measurement, not the chip IRQ */
 
   /* op runner */
   const Ft9366Op *seq;
@@ -297,17 +297,17 @@ struct _FpiDeviceFt9366
   guint16         frame[FT9366_FRAME_PIXELS];
 
   /* best of the frames taken for the current touch */
-  guint16         best_frame[FT9366_FRAME_PIXELS];
-  gdouble         best_coverage;
-  guint           frames_taken;
+  guint16 best_frame[FT9366_FRAME_PIXELS];
+  gdouble best_coverage;
+  guint   frames_taken;
 
   /* last capture after processing: 1..254 = pixel, FT9366_PX_NONE = no finger */
-  guint8          image[FT9366_FRAME_PIXELS];
-  guint8          dead[FT9366_FRAME_PIXELS];  /* from the background: always ~0 */
+  guint8 image[FT9366_FRAME_PIXELS];
+  guint8 dead[FT9366_FRAME_PIXELS];           /* from the background: always ~0 */
 
   /* enroll */
-  GPtrArray      *enroll_images;
-  guint           enroll_dups;     /* consecutive near-duplicate touches */
+  GPtrArray *enroll_images;
+  guint      enroll_dups;          /* consecutive near-duplicate touches */
 };
 G_DECLARE_FINAL_TYPE (FpiDeviceFt9366, fpi_device_ft9366, FPI, DEVICE_FT9366, FpDevice);
 G_DEFINE_TYPE (FpiDeviceFt9366, fpi_device_ft9366, FP_TYPE_DEVICE);
@@ -783,7 +783,7 @@ match_print (FpiDeviceFt9366 *self, FpPrint *print, Ft9366MatchInfo *info)
   guint16 version;
   guint n = 0;
 
-  *info = (Ft9366MatchInfo) { 0 };
+  *info = (Ft9366MatchInfo){ 0 };
   g_object_get (print, "fpi-data", &data, NULL);
   if (!data || !g_variant_check_format_string (data, "(qaay)", FALSE))
     return FALSE;
@@ -897,9 +897,11 @@ capture_run_state (FpiSsm *ssm, FpDevice *dev)
       fp_dbg ("irq flags 0x%04x, waiting for %s", flags, self->wait_up ? "up" : "down");
 
       if (self->wait_up)
-        /* in up mode the IRQ itself is the event (9a82 still says "down"),
-         * but it also fires early; confirm before trusting it */
-        fpi_ssm_jump_to_state (ssm, CAPTURE_MEASURE_IDLE);
+        {
+          /* in up mode the IRQ itself is the event (9a82 still says "down"),
+           * but it also fires early; confirm before trusting it */
+          fpi_ssm_jump_to_state (ssm, CAPTURE_MEASURE_IDLE);
+        }
       else if ((flags & FT9366_IRQ_BASE_BAD) && !(flags & FT9366_IRQ_DOWN))
         {
           /* The chip keeps raising this while its baseline is wrong (taken
@@ -917,7 +919,9 @@ capture_run_state (FpiSsm *ssm, FpDevice *dev)
           fpi_ssm_jump_to_state_delayed (ssm, CAPTURE_AFE_IMAGE, FT9366_SETTLE_MS);
         }
       else
-        fpi_ssm_jump_to_state (ssm, CAPTURE_ARM_AFE);
+        {
+          fpi_ssm_jump_to_state (ssm, CAPTURE_ARM_AFE);
+        }
       break;
 
     case CAPTURE_AFE_IMAGE:
@@ -927,7 +931,9 @@ capture_run_state (FpiSsm *ssm, FpDevice *dev)
           seq_run (ssm, dev, seq_idle_afe_image);
         }
       else
-        seq_run (ssm, dev, seq_afe_image);
+        {
+          seq_run (ssm, dev, seq_afe_image);
+        }
       break;
 
     case CAPTURE_FRAME:
@@ -1100,7 +1106,8 @@ capture_run_state (FpiSsm *ssm, FpDevice *dev)
 /* ---- actions ------------------------------------------------------------ */
 
 static void start_capture (FpiDeviceFt9366 *self);
-static void start_action (FpiDeviceFt9366 *self, Ft9366Action action);
+static void start_action (FpiDeviceFt9366 *self,
+                          Ft9366Action     action);
 
 static void
 action_fail (FpiDeviceFt9366 *self, GError *error)
