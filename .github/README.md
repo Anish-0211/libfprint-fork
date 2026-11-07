@@ -1,6 +1,6 @@
 # libfprint + FocalTech FT9366 driver
 
-[![CI](https://github.com/Anish-0211/libfprint-fork/actions/workflows/ci.yml/badge.svg)](https://github.com/Anish-0211/libfprint-fork/actions/workflows/ci.yml)
+[![CI](https://github.com/Anish-0211/libfprint-fork/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Anish-0211/libfprint-fork/actions/workflows/ci.yml)
 
 An open-source [libfprint](https://gitlab.freedesktop.org/libfprint/libfprint) driver for the
 **FocalTech FT9366 fingerprint sensor behind a Realtek RTS5811 USB bridge (`2808:a658`)**, found
@@ -136,9 +136,9 @@ unit's usable window.
 | Enroll | 0 of 20 stages | 20 of 20 |
 | Finger down to match | about 930 ms | about 476 ms |
 
-Enroll, verify and `sudo` through `pam_fprintd` work, and fingers other than the enrolled one
-were rejected. **Not yet verified:** GNOME lock screen unlock, behaviour across suspend, and any
-other `2808:a658` unit.
+Enroll, verify, `sudo` through `pam_fprintd` and GNOME lock screen unlock work, and fingers
+other than the enrolled one were rejected. **Not yet verified:** behaviour across suspend and
+reboot, and any other `2808:a658` unit.
 
 **Tuning another unit:** if touches are rejected with coverage stuck near 25 %, run with
 `FT9366_DUMP` set and check whether the frames are saturated. If they are, try other
