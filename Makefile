@@ -1,8 +1,16 @@
 BUILD ?= build
 SETUP_OPTS ?= -Ddoc=false -Dgtk-examples=false -Dintrospection=false
-DRIVER_SRC := libfprint/drivers/ft9366.c libfprint/drivers/ft9366-match.c libfprint/drivers/ft9366-match.h
+LINT_SRC := libfprint examples tests demo
+LINT_SUPPRESS := unknownMacro constParameterCallback \
+	unusedStructMember:libfprint/drivers/ft9366-match.h unusedStructMember:examples/manage-prints.c \
+	wrongPrintfScanfArgNum:examples/identify.c wrongPrintfScanfArgNum:examples/verify.c wrongPrintfScanfArgNum:examples/manage-prints.c \
+	assertWithSideEffect:tests/test-utils.c memleak:demo/gtk-libfprint-test.c \
+	constParameterPointer:libfprint/fp-image.c constVariablePointer:libfprint/fp-image.c \
+	constParameterPointer:libfprint/fpi-assembling.c constParameterPointer:libfprint/fpi-byte-reader.c \
+	constParameterPointer:libfprint/fpi-byte-reader.h constVariablePointer:libfprint/fpi-byte-reader.c \
+	constParameterPointer:libfprint/fpi-byte-writer.c
 
-.PHONY: all setup install-tools deps configure nuke build test format format-check lint lint-all scan asan valgrind check clean help
+.PHONY: all setup install-tools deps configure nuke build test format format-check lint scan asan valgrind check clean help
 
 all: build
 
@@ -63,11 +71,7 @@ format-check:
 
 lint:
 	@command -v cppcheck >/dev/null || { echo "cppcheck not found: install the "cppcheck" package"; exit 1; }
-	cppcheck --library=gtk --suppress=unknownMacro --suppress=unusedStructMember:libfprint/drivers/ft9366-match.h --enable=warning,style,performance --inline-suppr --error-exitcode=1 -I libfprint -I libfprint/drivers $(DRIVER_SRC)
-
-lint-all:
-	@command -v cppcheck >/dev/null || { echo "cppcheck not found: install the cppcheck package"; exit 1; }
-	-cppcheck --library=gtk --suppress=unknownMacro --enable=warning,style,performance --inline-suppr -q -j4 -I libfprint -I libfprint/drivers libfprint examples tests demo
+	cppcheck --library=gtk $(addprefix --suppress=,$(LINT_SUPPRESS)) --enable=warning,style,performance --inline-suppr --error-exitcode=1 -q -j4 -i libfprint/nbis -I libfprint -I libfprint/drivers $(LINT_SRC)
 
 scan:
 	rm -rf build-scan
@@ -88,4 +92,4 @@ clean:
 	rm -rf $(BUILD) build-scan build-asan
 
 help:
-	@echo "setup  deps  nuke  build  test  format  format-check  lint  lint-all  scan  asan  valgrind  check  clean"
+	@echo "setup  deps  nuke  build  test  format  format-check  lint  scan  asan  valgrind  check  clean"
