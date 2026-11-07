@@ -71,7 +71,7 @@
 
 /* values the vendor driver settled on for this sensor */
 #define FT9366_FDT_DAC 0x1a
-#define FT9366_IMG_DAC 0x3b
+#define FT9366_IMG_DAC 0x36
 #define FT9366_FDT_BASE_DROP 31    /* baseline = empty-sensor measurement - this */
 #define FT9366_MAX_REINITS 3       /* sensor recalibrations per touch for a bad baseline */
 #define FT9366_FDT_STABLE 8        /* measurement noise: readings this close are "unchanged" */
@@ -412,6 +412,22 @@ seq_sent_cb (FpiUsbTransfer *transfer, FpDevice *dev,
                            seq_reply_cb, NULL);
 }
 
+/* tuning experiments: an optional environment override for a sensor setting */
+static guint16
+tuning_value (const char *name, guint16 fallback)
+{
+  const char *str = g_getenv (name);
+  gchar *end = NULL;
+  guint64 val;
+
+  if (str == NULL || *str == '\0')
+    return fallback;
+  val = g_ascii_strtoull (str, &end, 0);
+  if (*end != '\0' || val > 0xffff)
+    return fallback;
+  return (guint16) val;
+}
+
 static FpiUsbTransfer *
 op_build (FpDevice *dev, FpiDeviceFt9366 *self, const Ft9366Op *op)
 {
@@ -432,8 +448,8 @@ op_build (FpDevice *dev, FpiDeviceFt9366 *self, const Ft9366Op *op)
       memset (t->buffer, 0, 24);
       t->buffer[0] = 0x4b;
       t->buffer[2] = FT9366_FDT_DAC;
-      t->buffer[4] = FT9366_IMG_DAC;
-      t->buffer[6] = 0xc8;
+      t->buffer[4] = tuning_value ("FT9366_IMG_DAC", FT9366_IMG_DAC);
+      t->buffer[6] = tuning_value ("FT9366_INTEGRATION", 0xc8);
       for (guint i = 0; i < 4; i++)
         {
           FP_WRITE_UINT16_BE (&t->buffer[7 + 2 * i], self->fdt_base[i]);
@@ -514,7 +530,8 @@ op_build (FpDevice *dev, FpiDeviceFt9366 *self, const Ft9366Op *op)
     case OP_DAC:
       FP_WRITE_UINT16_BE (&t->buffer[2], FT9366_REG_DAC);
       FP_WRITE_UINT16_BE (&t->buffer[4], 1);
-      FP_WRITE_UINT16_BE (&t->buffer[6], 0xfc80 | op->val);
+      FP_WRITE_UINT16_BE (&t->buffer[6], 0xfc80 |
+                          (op->val == FT9366_IMG_DAC ? tuning_value ("FT9366_IMG_DAC", op->val) : op->val));
       break;
 
     case OP_WR16:
