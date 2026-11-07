@@ -989,6 +989,11 @@ capture_run_state (FpiSsm *ssm, FpDevice *dev)
       break;
 
     case CAPTURE_TO_UP:
+      if (self->action != OP_ENROLL)
+        {
+          fpi_ssm_mark_completed (ssm);
+          break;
+        }
       self->wait_up = TRUE;
       fpi_ssm_jump_to_state (ssm, CAPTURE_ARM_AFE);
       break;
