@@ -1,3 +1,7 @@
 *.o
 *.swp
 _build
+
+# fingerprint templates and sensor dumps are personal data
+*.variant
+*.pgm
