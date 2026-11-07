@@ -24,9 +24,9 @@
 #include <math.h>
 #include <string.h>
 
-#define FT9366_NORM_RADIUS  7    /* local contrast window: (2r+1)^2 */
-#define FT9366_MASK_RATIO   0.3  /* below this share of the strongest contrast = no finger */
-#define FT9366_MIN_SIGNAL   40   /* raw spread of background - frame below this = no finger */
+#define FT9366_NORM_RADIUS 7     /* local contrast window: (2r+1)^2 */
+#define FT9366_MASK_RATIO 0.3    /* below this share of the strongest contrast = no finger */
+#define FT9366_MIN_SIGNAL 40     /* raw spread of background - frame below this = no finger */
 
 /* ---- image processing --------------------------------------------------- */
 
@@ -153,47 +153,47 @@ ft9366_process_frame (const guint16 *frame, const guint16 *background,
  * structure edge-like, and the small image leaves few strong extrema.
  */
 
-#define SIFT_INTVLS        3
-#define SIFT_SIGMA         1.6
-#define SIFT_INIT_SIGMA    0.5
+#define SIFT_INTVLS 3
+#define SIFT_SIGMA 1.6
+#define SIFT_INIT_SIGMA 0.5
 #ifndef SIFT_OCTAVES
-#define SIFT_OCTAVES       3
+#define SIFT_OCTAVES 3
 #endif
 #ifndef SIFT_CONTR_THR
-#define SIFT_CONTR_THR     0.02
+#define SIFT_CONTR_THR 0.02
 #endif
 #ifndef SIFT_CURV_THR
-#define SIFT_CURV_THR      15.0
+#define SIFT_CURV_THR 15.0
 #endif
-#define SIFT_BORDER        3
-#define SIFT_MAX_INTERP    5
-#define SIFT_ORI_BINS      36
-#define SIFT_ORI_SIG       1.5
-#define SIFT_ORI_RADIUS    (3.0 * SIFT_ORI_SIG)
-#define SIFT_ORI_PEAK      0.8
-#define SIFT_DESCR_WIDTH   4
-#define SIFT_DESCR_BINS    8
-#define SIFT_DESCR_SCL     3.0
+#define SIFT_BORDER 3
+#define SIFT_MAX_INTERP 5
+#define SIFT_ORI_BINS 36
+#define SIFT_ORI_SIG 1.5
+#define SIFT_ORI_RADIUS (3.0 * SIFT_ORI_SIG)
+#define SIFT_ORI_PEAK 0.8
+#define SIFT_DESCR_WIDTH 4
+#define SIFT_DESCR_BINS 8
+#define SIFT_DESCR_SCL 3.0
 #define SIFT_DESCR_MAG_THR 0.2
-#define DESCR_DIM          (SIFT_DESCR_WIDTH * SIFT_DESCR_WIDTH * SIFT_DESCR_BINS)
+#define DESCR_DIM (SIFT_DESCR_WIDTH * SIFT_DESCR_WIDTH * SIFT_DESCR_BINS)
 
 #ifndef FT9366_MAX_KP
-#define FT9366_MAX_KP      256
+#define FT9366_MAX_KP 256
 #endif
 #ifndef FT9366_MASK_MARGIN
 #define FT9366_MASK_MARGIN 3     /* px of finger a keypoint needs around it */
 #endif
 #ifndef FT9366_RATIO
-#define FT9366_RATIO       0.8   /* nearest / second-nearest descriptor distance */
+#define FT9366_RATIO 0.8         /* nearest / second-nearest descriptor distance */
 #endif
 #ifndef FT9366_POS_TOL
-#define FT9366_POS_TOL     2.5   /* px, pose agreement */
+#define FT9366_POS_TOL 2.5       /* px, pose agreement */
 #endif
 #ifndef FT9366_ORI_TOL
-#define FT9366_ORI_TOL     (20 * G_PI / 180)
+#define FT9366_ORI_TOL (20 * G_PI / 180)
 #endif
 #ifndef FT9366_MAX_ROT
-#define FT9366_MAX_ROT     (60 * G_PI / 180)
+#define FT9366_MAX_ROT (60 * G_PI / 180)
 #endif
 
 typedef struct
@@ -330,9 +330,13 @@ pyramid_build (Pyramid *pyr, const Img *base)
             pyr->gauss[o][i] = img_blur (base, s);
           }
         else if (i == 0)
-          pyr->gauss[o][i] = img_half (pyr->gauss[o - 1][SIFT_INTVLS]);
+          {
+            pyr->gauss[o][i] = img_half (pyr->gauss[o - 1][SIFT_INTVLS]);
+          }
         else
-          pyr->gauss[o][i] = img_blur (pyr->gauss[o][i - 1], sig[i]);
+          {
+            pyr->gauss[o][i] = img_blur (pyr->gauss[o][i - 1], sig[i]);
+          }
       }
 
   for (gint o = 0; o < SIFT_OCTAVES; o++)
@@ -410,10 +414,18 @@ interp_extremum (const Pyramid *pyr, gint o, gint *i, gint *x, gint *y,
       dys = (DOG (o, *i + 1, *x, *y + 1) - DOG (o, *i + 1, *x, *y - 1) -
              DOG (o, *i - 1, *x, *y + 1) + DOG (o, *i - 1, *x, *y - 1)) / 4;
 
-      H[0][0] = dxx; H[0][1] = dxy; H[0][2] = dxs;
-      H[1][0] = dxy; H[1][1] = dyy; H[1][2] = dys;
-      H[2][0] = dxs; H[2][1] = dys; H[2][2] = dss;
-      g[0] = dx; g[1] = dy; g[2] = ds;
+      H[0][0] = dxx;
+      H[0][1] = dxy;
+      H[0][2] = dxs;
+      H[1][0] = dxy;
+      H[1][1] = dyy;
+      H[1][2] = dys;
+      H[2][0] = dxs;
+      H[2][1] = dys;
+      H[2][2] = dss;
+      g[0] = dx;
+      g[1] = dy;
+      g[2] = ds;
 
       det = H[0][0] * (H[1][1] * H[2][2] - H[1][2] * H[2][1]) -
             H[0][1] * (H[1][0] * H[2][2] - H[1][2] * H[2][0]) +
@@ -824,7 +836,10 @@ best_pose (const GArray *pairs, Pose *out)
           mty += pr->ty;
           n++;
         }
-      mpx /= n; mpy /= n; mtx /= n; mty /= n;
+      mpx /= n;
+      mpy /= n;
+      mtx /= n;
+      mty /= n;
       for (guint k = 0; k < pairs->len; k++)
         {
           const Pair *pr = &g_array_index (pairs, Pair, k);
@@ -947,13 +962,15 @@ ft9366_template_new (const guint8 * const *images, guint n)
 
           for (guint u = 0; u < n; u++)
             if (placed[u] && tpl->group[u] == groups)
-              for (guint v = 0; v < n; v++)
-                if (!placed[v] && links[u * n + v] > bw)
-                  {
-                    bw = links[u * n + v];
-                    bu = u;
-                    bv = v;
-                  }
+              {
+                for (guint v = 0; v < n; v++)
+                  if (!placed[v] && links[u * n + v] > bw)
+                    {
+                      bw = links[u * n + v];
+                      bu = u;
+                      bv = v;
+                    }
+              }
           if (bv == n)
             break;
           placed[bv] = TRUE;
