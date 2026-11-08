@@ -125,8 +125,11 @@ unit's usable window.
   saturated or zero pixels) and, only if it is outside that range, estimates a better DAC from
   the roughly 615 counts per step measured here, retakes the background and repeats, at most 4
   times, within `0x28` to `0x58`. A healthy unit costs nothing extra. The value is kept in
-  memory only; the driver writes no files. It is covered by simulated tests, and **validation on
-  real hardware is still pending**.
+  memory only; the driver writes no files. It is skipped while a finger is already on the
+  sensor at activation. On the author's unit the healthy path was checked on hardware (6 of 6
+  verifies, background mean 2010 to 2471 at DAC `0x36`, no recalibration needed). **The
+  recalibration path itself is covered by simulated tests only**, because no unit with a
+  mis-set DAC was available to test it on.
 - **Overrides for tuning your own unit:** `FT9366_IMG_DAC` pins the imaging DAC and turns the
   automatic calibration off, `FT9366_INTEGRATION` changes the bridge integration byte (for
   example `FT9366_IMG_DAC=0x35`), and `FT9366_DUMP=<dir>` writes every capture, raw frame and
