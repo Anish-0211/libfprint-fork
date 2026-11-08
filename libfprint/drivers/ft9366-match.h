@@ -92,3 +92,19 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC (Ft9366Template, ft9366_template_free)
 #define FT9366_SURE_INLIERS 12
 
 gboolean ft9366_match_accept (const Ft9366MatchInfo *info);
+
+#define FT9366_DAC_MIN 0x28
+#define FT9366_DAC_MAX 0x58
+
+typedef struct
+{
+  gdouble mean;
+  gdouble saturated;
+  gdouble zero;
+} Ft9366BgStats;
+
+void     ft9366_background_stats (const guint16 *background,
+                                  Ft9366BgStats *stats);
+gboolean ft9366_background_ok (const Ft9366BgStats *stats);
+guint    ft9366_next_dac (guint                dac,
+                          const Ft9366BgStats *stats);

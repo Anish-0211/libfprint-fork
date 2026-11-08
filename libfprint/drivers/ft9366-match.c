@@ -1134,3 +1134,71 @@ ft9366_match_accept (const Ft9366MatchInfo *info)
   return (info->inliers >= FT9366_MIN_INLIERS && info->ncc >= FT9366_MIN_NCC) ||
          info->inliers >= FT9366_SURE_INLIERS;
 }
+
+#define FT9366_BG_EDGE 2
+#define FT9366_BG_SATURATED 4090
+#define FT9366_BG_ZERO 10
+#define FT9366_BG_TARGET 1900
+#define FT9366_BG_MIN 1000
+#define FT9366_BG_MAX 3000
+#define FT9366_BG_RAIL_SHARE 0.02
+#define FT9366_DAC_COUNTS_PER_STEP 615
+#define FT9366_DAC_MAX_STEP 10
+#define FT9366_DAC_RAIL_STEP 5
+
+void
+ft9366_background_stats (const guint16 *background, Ft9366BgStats *stats)
+{
+  guint n = 0, saturated = 0, zero = 0;
+  gdouble sum = 0;
+
+  for (gint y = 0; y < FT9366_FRAME_HEIGHT; y++)
+    for (gint x = FT9366_BG_EDGE; x < FT9366_FRAME_WIDTH - FT9366_BG_EDGE; x++)
+      {
+        guint16 v = background[y * FT9366_FRAME_WIDTH + x];
+
+        sum += v;
+        n++;
+        if (v >= FT9366_BG_SATURATED)
+          saturated++;
+        if (v <= FT9366_BG_ZERO)
+          zero++;
+      }
+  stats->mean = sum / n;
+  stats->saturated = (gdouble) saturated / n;
+  stats->zero = (gdouble) zero / n;
+}
+
+gboolean
+ft9366_background_ok (const Ft9366BgStats *stats)
+{
+  return stats->mean >= FT9366_BG_MIN && stats->mean <= FT9366_BG_MAX &&
+         stats->saturated <= FT9366_BG_RAIL_SHARE && stats->zero <= FT9366_BG_RAIL_SHARE;
+}
+
+guint
+ft9366_next_dac (guint dac, const Ft9366BgStats *stats)
+{
+  gint step;
+
+  if (ft9366_background_ok (stats))
+    return dac;
+
+  if (stats->zero > FT9366_BG_RAIL_SHARE && stats->mean < FT9366_BG_MIN)
+    {
+      step = FT9366_DAC_RAIL_STEP;
+    }
+  else if (stats->saturated > FT9366_BG_RAIL_SHARE && stats->mean > FT9366_BG_MAX)
+    {
+      step = -FT9366_DAC_RAIL_STEP;
+    }
+  else
+    {
+      step = (gint) round ((FT9366_BG_TARGET - stats->mean) / FT9366_DAC_COUNTS_PER_STEP);
+      step = CLAMP (step, -FT9366_DAC_MAX_STEP, FT9366_DAC_MAX_STEP);
+      if (step == 0)
+        step = stats->mean < FT9366_BG_TARGET ? 1 : -1;
+    }
+
+  return CLAMP ((gint) dac + step, FT9366_DAC_MIN, FT9366_DAC_MAX);
+}
