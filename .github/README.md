@@ -120,10 +120,17 @@ unit's usable window.
 
 - **Verify and identify no longer wait for the finger to lift.** Enroll still does. The
   match arrives about 0.5 s after the finger lands instead of about 0.9 s.
-- **Overrides for tuning your own unit:** `FT9366_IMG_DAC` and `FT9366_INTEGRATION` change the
-  imaging DAC and the bridge integration byte at runtime (for example `FT9366_IMG_DAC=0x35`),
-  and `FT9366_DUMP=<dir>` writes every capture, raw frame and background as image files.
-  Frame dumps are biometric data: keep them out of version control.
+- **Automatic imaging DAC calibration.** Every activation already takes a background frame of
+  the empty sensor. The driver now checks its brightness (mean between 1000 and 3000, almost no
+  saturated or zero pixels) and, only if it is outside that range, estimates a better DAC from
+  the roughly 615 counts per step measured here, retakes the background and repeats, at most 4
+  times, within `0x28` to `0x58`. A healthy unit costs nothing extra. The value is kept in
+  memory only; the driver writes no files. It is covered by simulated tests, and **validation on
+  real hardware is still pending**.
+- **Overrides for tuning your own unit:** `FT9366_IMG_DAC` pins the imaging DAC and turns the
+  automatic calibration off, `FT9366_INTEGRATION` changes the bridge integration byte (for
+  example `FT9366_IMG_DAC=0x35`), and `FT9366_DUMP=<dir>` writes every capture, raw frame and
+  background as image files. Frame dumps are biometric data: keep them out of version control.
 - **Tooling:** `make setup`, `make check` (format check, strict `cppcheck` lint, build and
   tests) and CI. See the Development section of the root
   [README.md](../README.md).
@@ -140,10 +147,10 @@ Enroll, verify, `sudo` through `pam_fprintd`, GNOME lock screen unlock, suspend/
 reboot all work, and fingers other than the enrolled one were rejected. **Not yet verified:**
 any other `2808:a658` unit.
 
-**Tuning another unit:** if touches are rejected with coverage stuck near 25 %, run with
-`FT9366_DUMP` set and check whether the frames are saturated. If they are, try other
-`FT9366_IMG_DAC` values around `0x30` to `0x40` and look for frames that use the middle of the
-range.
+**Tuning another unit:** the driver now calibrates the DAC itself, so touches stuck near 25 %
+coverage should no longer happen. If they still do, run with `FT9366_DUMP` set and check
+whether the frames are saturated, then pin values around `0x30` to `0x40` with `FT9366_IMG_DAC`
+and look for frames that use the middle of the range. Please report the working value.
 
 ## Credits
 
