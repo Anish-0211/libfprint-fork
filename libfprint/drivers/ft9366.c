@@ -92,6 +92,7 @@
 #define FT9366_MAX_DUPS 1           /* then take it anyway rather than loop */
 #define FT9366_MIN_COVERAGE 0.4     /* share of the sensor a usable touch covers */
 #define FT9366_PRINT_VERSION 2
+#define FT9366_MAX_PRINT_IMAGES 64
 
 /* ---- op tables ---------------------------------------------------------- */
 
@@ -347,6 +348,15 @@ seq_reply_cb (FpiUsbTransfer *transfer, FpDevice *dev,
   if (error)
     {
       fpi_ssm_mark_failed (transfer->ssm, error);
+      return;
+    }
+
+  if (transfer->actual_length > sizeof self->reply)
+    {
+      fpi_ssm_mark_failed (transfer->ssm,
+                           fpi_device_error_new_msg (FP_DEVICE_ERROR_PROTO,
+                                                     "Reply of %" G_GSSIZE_FORMAT " bytes is too long",
+                                                     transfer->actual_length));
       return;
     }
 
@@ -806,7 +816,7 @@ match_print (FpiDeviceFt9366 *self, FpPrint *print, Ft9366MatchInfo *info)
     return FALSE;
 
   g_variant_get (data, "(q@aay)", &version, &images);
-  if (version != FT9366_PRINT_VERSION)
+  if (version != FT9366_PRINT_VERSION || g_variant_n_children (images) > FT9366_MAX_PRINT_IMAGES)
     return FALSE;
 
   imgs = g_new (const guint8 *, g_variant_n_children (images));
