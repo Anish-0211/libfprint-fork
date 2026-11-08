@@ -169,6 +169,103 @@ test_raw_touch_covers (void)
   g_assert_cmpfloat (ft9366_process_frame (frame, background, dead, image), >, 0.4);
 }
 
+#define COUNTS_PER_DAC_STEP 615.0
+#define MAX_ADJUSTMENTS 4
+
+static Ft9366BgStats
+simulated_background (guint dac, gint zero_point)
+{
+  guint16 background[FT9366_FRAME_PIXELS];
+  guint16 level = CLAMP ((gint) (COUNTS_PER_DAC_STEP * ((gint) dac - zero_point)), 0, 4092);
+  Ft9366BgStats stats;
+
+  for (guint i = 0; i < FT9366_FRAME_PIXELS; i++)
+    background[i] = level;
+  ft9366_background_stats (background, &stats);
+  return stats;
+}
+
+static guint
+calibrate (gint zero_point, guint dac, guint *adjustments)
+{
+  *adjustments = 0;
+  for (;;)
+    {
+      Ft9366BgStats stats = simulated_background (dac, zero_point);
+      guint next;
+
+      if (ft9366_background_ok (&stats) || *adjustments >= MAX_ADJUSTMENTS)
+        return dac;
+      next = ft9366_next_dac (dac, &stats);
+      if (next == dac)
+        return dac;
+      dac = next;
+      (*adjustments)++;
+    }
+}
+
+static void
+test_background_stats (void)
+{
+  Ft9366BgStats stats;
+
+  stats = simulated_background (0x20, 0x33);
+  g_assert_cmpfloat (stats.mean, ==, 0.0);
+  g_assert_cmpfloat (stats.zero, ==, 1.0);
+
+  stats = simulated_background (0x50, 0x33);
+  g_assert_cmpfloat (stats.saturated, ==, 1.0);
+  g_assert_cmpfloat (stats.zero, ==, 0.0);
+
+  stats = simulated_background (0x36, 0x33);
+  g_assert_cmpfloat (stats.saturated, ==, 0.0);
+  g_assert_cmpfloat (stats.zero, ==, 0.0);
+  g_assert_true (ft9366_background_ok (&stats));
+}
+
+static void
+test_calibration_leaves_a_healthy_sensor_alone (void)
+{
+  guint adjustments;
+
+  for (guint dac = 0x35; dac <= 0x37; dac++)
+    {
+      g_assert_cmpuint (calibrate (0x33, dac, &adjustments), ==, dac);
+      g_assert_cmpuint (adjustments, ==, 0);
+    }
+}
+
+static void
+test_calibration_converges_on_other_units (void)
+{
+  for (gint zero_point = 0x2c; zero_point <= 0x44; zero_point++)
+    {
+      guint adjustments;
+      guint dac = calibrate (zero_point, 0x36, &adjustments);
+      Ft9366BgStats stats = simulated_background (dac, zero_point);
+
+      g_test_message ("zero point 0x%02x: DAC 0x%02x after %u adjustments", zero_point, dac, adjustments);
+      g_assert_cmpfloat (stats.mean, >=, 1000.0);
+      g_assert_cmpfloat (stats.mean, <=, 3000.0);
+      g_assert_cmpfloat (stats.saturated, ==, 0.0);
+      g_assert_cmpfloat (stats.zero, ==, 0.0);
+      g_assert_cmpuint (adjustments, <=, MAX_ADJUSTMENTS);
+      g_assert_cmpuint (dac, >=, FT9366_DAC_MIN);
+      g_assert_cmpuint (dac, <=, FT9366_DAC_MAX);
+    }
+}
+
+static void
+test_calibration_stays_in_bounds (void)
+{
+  Ft9366BgStats stats = simulated_background (FT9366_DAC_MAX, 0x7f);
+
+  g_assert_cmpuint (ft9366_next_dac (FT9366_DAC_MAX, &stats), ==, FT9366_DAC_MAX);
+
+  stats = simulated_background (FT9366_DAC_MIN, 0);
+  g_assert_cmpuint (ft9366_next_dac (FT9366_DAC_MIN, &stats), ==, FT9366_DAC_MIN);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -182,6 +279,12 @@ main (int argc, char *argv[])
   g_test_add_func ("/ft9366-match/frame-equal-to-background-has-no-coverage",
                    test_frame_equal_to_background_has_no_coverage);
   g_test_add_func ("/ft9366-match/raw-touch-covers", test_raw_touch_covers);
+  g_test_add_func ("/ft9366-match/background-stats", test_background_stats);
+  g_test_add_func ("/ft9366-match/calibration-leaves-healthy-sensor-alone",
+                   test_calibration_leaves_a_healthy_sensor_alone);
+  g_test_add_func ("/ft9366-match/calibration-converges-on-other-units",
+                   test_calibration_converges_on_other_units);
+  g_test_add_func ("/ft9366-match/calibration-stays-in-bounds", test_calibration_stays_in_bounds);
 
   return g_test_run ();
 }
