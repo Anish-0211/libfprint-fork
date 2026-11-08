@@ -93,6 +93,7 @@
 #define FT9366_MIN_COVERAGE 0.4     /* share of the sensor a usable touch covers */
 #define FT9366_PRINT_VERSION 2
 #define FT9366_MAX_PRINT_IMAGES 64
+#define FT9366_CAL_MAX_PROBES 4
 
 /* ---- op tables ---------------------------------------------------------- */
 
@@ -280,6 +281,10 @@ struct _FpiDeviceFt9366
   gboolean     have_base;          /* fdt_base / background are valid */
   gboolean     finger_at_init;     /* the last init measured a touched sensor */
   gboolean     sw_down;            /* finger-down came from a measurement, not the chip IRQ */
+  guint        img_dac;
+  gboolean     dac_pinned;
+  guint        cal_probes;
+  gboolean     cal_retake;
 
   /* op runner */
   const Ft9366Op *seq;
@@ -458,7 +463,7 @@ op_build (FpDevice *dev, FpiDeviceFt9366 *self, const Ft9366Op *op)
       memset (t->buffer, 0, 24);
       t->buffer[0] = 0x4b;
       t->buffer[2] = FT9366_FDT_DAC;
-      t->buffer[4] = tuning_value ("FT9366_IMG_DAC", FT9366_IMG_DAC);
+      t->buffer[4] = self->img_dac;
       t->buffer[6] = tuning_value ("FT9366_INTEGRATION", 0xc8);
       for (guint i = 0; i < 4; i++)
         {
@@ -541,7 +546,7 @@ op_build (FpDevice *dev, FpiDeviceFt9366 *self, const Ft9366Op *op)
       FP_WRITE_UINT16_BE (&t->buffer[2], FT9366_REG_DAC);
       FP_WRITE_UINT16_BE (&t->buffer[4], 1);
       FP_WRITE_UINT16_BE (&t->buffer[6], 0xfc80 |
-                          (op->val == FT9366_IMG_DAC ? tuning_value ("FT9366_IMG_DAC", op->val) : op->val));
+                          (op->val == FT9366_IMG_DAC ? self->img_dac : op->val));
       break;
 
     case OP_WR16:
@@ -627,6 +632,7 @@ enum {
   INIT_BG_FRAME,
   INIT_BG_STORE,
   INIT_BG_DONE,
+  INIT_BG_CHECK,
   INIT_BRIDGE_AFE,
   INIT_BRIDGE_CFG,
   INIT_NUM_STATES,
@@ -712,14 +718,46 @@ init_run_state (FpiSsm *ssm, FpDevice *dev)
     case INIT_BG_STORE:
       if (!self->finger_at_init)
         {
+          Ft9366BgStats stats;
+
           store_frame (self, self->background);
           ft9366_dead_pixels (self->background, self->dead);
+          ft9366_background_stats (self->background, &stats);
+          fp_dbg ("background mean %.0f, %.0f%% saturated, %.0f%% zero at DAC 0x%02x",
+                  stats.mean, stats.saturated * 100, stats.zero * 100, self->img_dac);
+
+          if (!self->dac_pinned && !ft9366_background_ok (&stats) &&
+              self->cal_probes < FT9366_CAL_MAX_PROBES)
+            {
+              guint next = ft9366_next_dac (self->img_dac, &stats);
+
+              if (next != self->img_dac)
+                {
+                  fp_info ("imaging DAC 0x%02x gives an unusable background, trying 0x%02x",
+                           self->img_dac, next);
+                  self->img_dac = next;
+                  self->cal_probes++;
+                  self->cal_retake = TRUE;
+                }
+            }
         }
       fpi_ssm_next_state (ssm);
       break;
 
     case INIT_BG_DONE:
       seq_run (ssm, dev, seq_frame_done);
+      break;
+
+    case INIT_BG_CHECK:
+      if (self->cal_retake)
+        {
+          self->cal_retake = FALSE;
+          fpi_ssm_jump_to_state (ssm, INIT_BG_AFE);
+        }
+      else
+        {
+          fpi_ssm_next_state (ssm);
+        }
       break;
 
     case INIT_BRIDGE_AFE:
@@ -1362,6 +1400,8 @@ static void
 start_action (FpiDeviceFt9366 *self, Ft9366Action action)
 {
   self->action = action;
+  self->cal_probes = 0;
+  self->cal_retake = FALSE;
   self->ssm = fpi_ssm_new (FP_DEVICE (self), init_run_state, INIT_NUM_STATES);
   fpi_ssm_start (self->ssm, init_complete);
 }
@@ -1425,6 +1465,8 @@ static const FpIdEntry id_table[] = {
 static void
 fpi_device_ft9366_init (FpiDeviceFt9366 *self)
 {
+  self->img_dac = tuning_value ("FT9366_IMG_DAC", FT9366_IMG_DAC);
+  self->dac_pinned = g_getenv ("FT9366_IMG_DAC") != NULL;
 }
 
 static void
